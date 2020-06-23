@@ -1,65 +1,109 @@
-// Horizontal Bar Chart
-d3.json("samples.json").then(function(data) {
-    //console.log(data[0]);
-    var metadata = data.metadata;
-    console.log(metadata);
-    var sortedBysamplevals = metadata.sort((a, b) => b.sample_values - a.sample_values);
+    function buildTable (data_sample) {
 
-    
-    // Slice the first 10 objects for plotting
-    slicedData = sortedBysamplevals.slice(0, 10);
-
-        var trace1 = {
-            x: samples_values,
-            y: samples.otu_ids,
-            orientation: 'h',
-            marker: {
-            color: 'rgba(55,128,191,0.6)',
-            width: 1
-            },
-            type: 'bar',
-            orientation: "h",
-            text: samples.otu_labels
-        };
+        d3.json("/data/samples.json").then((data) => {
+        
+            var metadata = data.metadata;
+            var meta = metadata.filter(sampleObj => sampleObj.id == data_sample);
+        
         
 
-        var data = [trace1];
+            var table = d3.select("#sample-metadata");
+            table.html("");
         
-        var layout = {
-            title: 'Top Operational Taxonomic Units (OTUs)'
+            Object.entries(meta[0]).forEach(([key, value]) => {
+            table.append("h6").text(`${key.toUpperCase()}: ${value}`);
+            });
         
-        };
-        
-        Plotly.newPlot('bar', data, layout);
 
-        // Use otu_ids for the x values.
-        // Use sample_values for the y values
-        // Use sample_values for the marker size.
-        // Use otu_ids for the marker colors.
-        // Use otu_labels for the text values.
-
-        var trace1 = {
-            x: samples.otu_ids,
-            y: samples.sample_values,
-            mode: 'markers',
-            marker: {
-            color: samples.otu_ids,
-            opacity: [1, 0.8, 0.6, 0.4],
-            size: [40, 60, 80, 100]
-            }
-        };
+        })
         
-        var data = [trace1];
-        
-        var layout = {
-            title: 'Bubble Chart OTU',
-            showlegend: false,
-            height: 600,
-            width: 600,
-            text: samples.otu_labels
+    }
 
-        };
-        
-        Plotly.newPlot('bubble', data, layout);
+    function buildGraphs (data_sample) {
+        d3.json("/data/samples.json").then((data) => {
+            
+            sample_vals = data.samples;
+            var sample = sample_vals[0].sample_values.slice(0,10).reverse();
+            otu_label_id = sample_vals[0].otu_ids.map(otu => `OTU ${otu}`)
 
- });
+            // Bar Chart
+            var trace1 =  {
+                    x: sample,
+                    y: otu_label_id,
+                    orientation: 'h',
+                    marker: {
+                    color: 'rgba(55,128,191,0.6)',
+                    width: 3
+                    },
+                    type: 'bar',
+                    orientation: "h",
+                    text: sample_vals[0].otu_labels.slice(0,10).reverse()
+                         };
+            
+            
+            var data = [trace1];
+            
+            var layout = {
+                title: 'Top 10 Bacteria Cultures Found'
+            };
+            
+            Plotly.newPlot('bar', data, layout);
+
+            // Bubble Chart 
+                var trace2 = {
+                    x: sample_vals[0].otu_ids,
+                    y: sample_vals[0].sample_values,
+                    mode: 'markers',
+                    marker: {
+                        color: sample_vals[0].otu_ids,
+                        opacity: [1, 0.8, 0.6, 0.4],
+                        size: sample.sample_values,
+                            },
+                    text: sample_vals[0].otu_labels
+                    }
+                
+                var data = [trace2];
+        
+                var layout = {
+                    title: "Bacteria Cultures Per Sample",
+                    margin: { t: 0 },
+                    hovermode: "closest",
+                    xaxis: { title: "OTU ID" },
+                    margin: { t: 30}
+                    };
+        
+                Plotly.newPlot('bubble', data, layout);
+
+        })
+    }
+
+
+    function init () {
+        var user_sel = d3.select("#selDataset");
+
+        d3.json("/data/samples.json").then((data) => {
+            var dropdown = data.names;
+            
+            dropdown.forEach((sample) => {
+                user_sel
+                    .append("option")
+                    .text(sample)
+                    .property("value", sample);
+        
+            });
+            
+            // var initSample = dropdown.filter(default_val => default_val.id == 940)
+            var initSample = dropdown[0]
+            buildGraphs(initSample);
+            buildTable(initSample);
+
+        });
+    }
+
+
+    function optionChanged(newSample) {
+        buildGraphs(newSample);
+        buildTable(newSample);
+    }
+
+    init();
