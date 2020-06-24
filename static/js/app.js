@@ -1,6 +1,6 @@
     function buildTable (data_sample) {
 
-        d3.json("/data/samples.json").then((data) => {
+        d3.json("./data/samples.json").then((data) => {
         
             var metadata = data.metadata;
             var meta = metadata.filter(sampleObj => sampleObj.id == data_sample);
@@ -20,7 +20,7 @@
     }
 
     function buildGraphs (data_sample) {
-        d3.json("/data/samples.json").then((data) => {
+        d3.json("./data/samples.json").then((data) => {
             
             sample_vals = data.samples;
             var sample_vals = sample_vals.filter(sampleObj => sampleObj.id == data_sample);
@@ -82,7 +82,7 @@
     function init () {
         var user_sel = d3.select("#selDataset");
 
-        d3.json("/data/samples.json").then((data) => {
+        d3.json("./data/samples.json").then((data) => {
             var dropdown = data.names;
             
             dropdown.forEach((sample) => {
