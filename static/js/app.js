@@ -23,6 +23,7 @@
         d3.json("/data/samples.json").then((data) => {
             
             sample_vals = data.samples;
+            var sample_vals = sample_vals.filter(sampleObj => sampleObj.id == data_sample);
             var sample = sample_vals[0].sample_values.slice(0,10).reverse();
             otu_label_id = sample_vals[0].otu_ids.map(otu => `OTU ${otu}`)
 
